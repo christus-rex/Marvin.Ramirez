@@ -1,5 +1,5 @@
 (() => {
-  const VERSION = '20260817-hq';
+  const VERSION = '20260817-education1';
 
   const read = async (files) => {
     const parts = await Promise.all(files.map(async (file) => {
@@ -66,6 +66,27 @@
     }
   };
 
+  const loadEducationCredential = async () => {
+    try {
+      const files = [
+        'data/eastern-education-1.txt',
+        'data/eastern-education-2.txt',
+        'data/eastern-education-3.txt',
+        'data/eastern-education-4.txt'
+      ];
+      const url = dataUri(await read(files), 'image/webp');
+      const image = document.getElementById('educationCredentialImage');
+      const link = document.getElementById('educationCredentialLink');
+      if (image) {
+        image.decoding = 'async';
+        image.src = url;
+      }
+      if (link) link.href = url;
+    } catch (error) {
+      console.error('Education credential failed to load:', error);
+    }
+  };
+
   const loadResume = async () => {
     try {
       const encoded = await read(['data/resume.txt']);
@@ -81,5 +102,6 @@
 
   loadProfile();
   loadCertificate();
+  loadEducationCredential();
   loadResume();
 })();
