@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="visitor-counter.css?v=20260817-1" />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -267,10 +268,15 @@
     <div class="shell footer-inner">
       <span>© <span id="year"></span> Marvin Alberto Ramirez</span>
       <span>IT Support • Desktop Engineering • Field Services</span>
+      <span class="visitor-counter" title="Persistent approximate unique visitor count">
+        <span class="visitor-counter-icon" aria-hidden="true"></span>
+        <span>Visitors <strong id="visitorCount" aria-live="polite">…</strong></span>
+      </span>
     </div>
   </footer>
-  <noscript>This portfolio requires JavaScript to display embedded media.</noscript>
+  <noscript>This portfolio requires JavaScript to display embedded media and the visitor count.</noscript>
   <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
   <script src="asset-loader.js?v=20260817-drive-resume1"></script>
+  <script src="visitor-counter.js?v=20260817-1"></script>
 </body>
 </html>
