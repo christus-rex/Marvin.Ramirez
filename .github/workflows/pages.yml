@@ -24,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Link exact credential PDF downloads
+      - name: Link Eastern credential PDF download
         shell: bash
         run: |
           python3 <<'PY'
@@ -33,14 +33,10 @@ jobs:
 
           eastern_name = "Eastern_Computer_Network_Administration_Diploma_High_Fidelity.pdf"
           eastern_href = "https://drive.google.com/uc?export=download&id=1L9G7QeaieD0zqoPQQyu3kOOYmtPBIF7R"
-          upper_name = "Upper_Moreland_High_School_Diploma_High_Fidelity.pdf"
-          upper_href = "https://drive.google.com/uc?export=download&id=1xUyDk8hZVfvkH5Q1zyFi1_C7lyl9K5RN"
 
           index = Path("index.html")
           html = index.read_text(encoding="utf-8")
 
-          # Eastern Center: the visible credential image downloads the exact PDF
-          # created from the user's newly supplied framed credential image.
           html, eastern_anchor_count = re.subn(
               r'<a\b[^>]*\bid="educationCredentialLink"[^>]*>',
               f'<a id="educationCredentialLink" href="{eastern_href}" target="_blank" rel="noopener" aria-label="Download Eastern Center credential as high-fidelity PDF">',
@@ -50,19 +46,8 @@ jobs:
           if eastern_anchor_count != 1:
               raise RuntimeError(f"Eastern credential link patch failed: {eastern_anchor_count}")
 
-          # Upper Moreland: retain the user's exact supplied diploma PDF.
-          html, upper_anchor_count = re.subn(
-              r'<a\b[^>]*href="assets/upper-moreland-high-school-diploma\.webp[^\"]*"[^>]*>',
-              f'<a href="{upper_href}" target="_blank" rel="noopener" aria-label="Download Upper Moreland High School diploma as high-fidelity PDF">',
-              html,
-              count=1,
-          )
-          if upper_anchor_count != 1:
-              raise RuntimeError(f"Upper Moreland credential link patch failed: {upper_anchor_count}")
-
           download_style = "font-weight:700;color:#2563eb;text-decoration:none"
           eastern_caption = "Computer Network Administration Program · June 2004"
-          upper_caption = "High School Diploma · June 2004"
 
           if "data-eastern-pdf-download" not in html:
               html = html.replace(
@@ -71,16 +56,8 @@ jobs:
                   1,
               )
 
-          if "data-upper-pdf-download" not in html:
-              html = html.replace(
-                  f"<figcaption>{upper_caption}</figcaption>",
-                  f'<figcaption>{upper_caption} · <a data-upper-pdf-download href="{upper_href}" target="_blank" rel="noopener" style="{download_style}">Download high-fidelity PDF</a></figcaption>',
-                  1,
-              )
-
           index.write_text(html, encoding="utf-8")
-          print(f"Eastern PDF: {eastern_name}")
-          print(f"Upper Moreland PDF: {upper_name}")
+          print(f"Eastern PDF linked: {eastern_name}")
           PY
 
       - name: Setup Pages
