@@ -38,9 +38,7 @@ jobs:
           downloads.mkdir(exist_ok=True)
 
           eastern_name = "Eastern_Computer_Network_Administration_Diploma_High_Fidelity.pdf"
-          upper_name = "Upper_Moreland_High_School_Diploma_High_Fidelity.pdf"
           eastern_pdf = downloads / eastern_name
-          upper_pdf = downloads / upper_name
 
           def image_to_pdf(source: Path, destination: Path) -> None:
               with Image.open(source) as image:
@@ -54,12 +52,6 @@ jobs:
                       optimize=False,
                   )
 
-          # Upper Moreland credential is a normal repository image asset.
-          image_to_pdf(
-              Path("assets/upper-moreland-high-school-diploma.webp"),
-              upper_pdf,
-          )
-
           # Eastern credential is stored as whitespace-safe base64 image data.
           eastern_b64 = "".join(
               Path("data/eastern-education-single.txt").read_text(encoding="utf-8").split()
@@ -68,13 +60,16 @@ jobs:
           eastern_image.write_bytes(base64.b64decode(eastern_b64))
           image_to_pdf(eastern_image, eastern_pdf)
 
-          # Patch only the deploy artifact. Source HTML stays clean and the page
-          # always points at PDFs generated from the same images it displays.
+          # The Upper Moreland download uses the user's supplied high-fidelity PDF
+          # hosted in a publicly readable Google Drive folder. Do not regenerate it
+          # from the on-page WEBP image.
+          upper_name = "Upper_Moreland_High_School_Diploma_High_Fidelity.pdf"
+          upper_href = "https://drive.google.com/uc?export=download&id=1xUyDk8hZVfvkH5Q1zyFi1_C7lyl9K5RN"
+
           index = Path("index.html")
           html = index.read_text(encoding="utf-8")
 
           eastern_href = f"downloads/{eastern_name}"
-          upper_href = f"downloads/{upper_name}"
 
           html, eastern_anchor_count = re.subn(
               r'<a\b[^>]*\bid="educationCredentialLink"[^>]*>',
@@ -82,16 +77,10 @@ jobs:
               html,
               count=1,
           )
-          html, upper_anchor_count = re.subn(
-              r'<a\b[^>]*href="assets/upper-moreland-high-school-diploma\.webp[^\"]*"[^>]*>',
-              f'<a href="{upper_href}" download="{upper_name}" aria-label="Download Upper Moreland High School diploma as high-fidelity PDF">',
-              html,
-              count=1,
-          )
 
-          if eastern_anchor_count != 1 or upper_anchor_count != 1:
+          if eastern_anchor_count != 1:
               raise RuntimeError(
-                  f"Credential link patch failed: Eastern={eastern_anchor_count}, Upper={upper_anchor_count}"
+                  f"Credential link patch failed: Eastern={eastern_anchor_count}"
               )
 
           download_style = "font-weight:700;color:#2563eb;text-decoration:none"
@@ -104,20 +93,28 @@ jobs:
                   f'<figcaption>{eastern_caption} · <a data-eastern-pdf-download href="{eastern_href}" download="{eastern_name}" style="{download_style}">Download high-fidelity PDF</a></figcaption>',
                   1,
               )
+
+          # Keep the Upper Moreland source link pointed at the exact uploaded PDF.
+          html = re.sub(
+              r'<a\b[^>]*href="assets/upper-moreland-high-school-diploma\.webp[^\"]*"[^>]*>',
+              f'<a href="{upper_href}" target="_blank" rel="noopener" aria-label="Download Upper Moreland High School diploma as high-fidelity PDF">',
+              html,
+              count=1,
+          )
           if "data-upper-pdf-download" not in html:
               html = html.replace(
                   f"<figcaption>{upper_caption}</figcaption>",
-                  f'<figcaption>{upper_caption} · <a data-upper-pdf-download href="{upper_href}" download="{upper_name}" style="{download_style}">Download high-fidelity PDF</a></figcaption>',
+                  f'<figcaption>{upper_caption} · <a data-upper-pdf-download href="{upper_href}" target="_blank" rel="noopener" style="{download_style}">Download high-fidelity PDF</a></figcaption>',
                   1,
               )
 
           index.write_text(html, encoding="utf-8")
 
-          # Fail deployment rather than silently publishing missing or tiny PDFs.
-          for pdf in (eastern_pdf, upper_pdf):
-              if not pdf.exists() or pdf.stat().st_size < 50_000:
-                  raise RuntimeError(f"Credential PDF generation failed: {pdf}")
-              print(f"Generated {pdf} ({pdf.stat().st_size:,} bytes)")
+          # Fail deployment rather than silently publishing a missing or tiny Eastern PDF.
+          if not eastern_pdf.exists() or eastern_pdf.stat().st_size < 50_000:
+              raise RuntimeError(f"Credential PDF generation failed: {eastern_pdf}")
+          print(f"Generated {eastern_pdf} ({eastern_pdf.stat().st_size:,} bytes)")
+          print("Using exact uploaded Upper Moreland PDF from public Drive hosting")
           PY
 
       - name: Setup Pages
