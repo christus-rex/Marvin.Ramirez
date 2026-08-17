@@ -1,0 +1,36 @@
+.visitor-counter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .045);
+  color: #9fb0c6;
+  white-space: nowrap;
+}
+
+.visitor-counter-icon {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #60a5fa;
+  box-shadow: 0 0 0 4px rgba(96, 165, 250, .1);
+}
+
+.visitor-counter strong {
+  color: #d8e4f2;
+  font-variant-numeric: tabular-nums;
+}
+
+.visitor-counter-ready .visitor-counter-icon {
+  background: #34d399;
+  box-shadow: 0 0 0 4px rgba(52, 211, 153, .1);
+}
+
+@media (max-width: 640px) {
+  .visitor-counter {
+    margin-top: 10px;
+  }
+}
