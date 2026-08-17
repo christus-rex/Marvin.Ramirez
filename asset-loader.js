@@ -1,5 +1,5 @@
 (() => {
-  const VERSION = '20260817-education1';
+  const VERSION = '20260817-diploma-fix2';
 
   const read = async (files) => {
     const parts = await Promise.all(files.map(async (file) => {
@@ -68,13 +68,7 @@
 
   const loadEducationCredential = async () => {
     try {
-      const files = [
-        'data/eastern-education-1.txt',
-        'data/eastern-education-2.txt',
-        'data/eastern-education-3.txt',
-        'data/eastern-education-4.txt'
-      ];
-      const url = dataUri(await read(files), 'image/webp');
+      const url = dataUri(await read(['data/eastern-education-single.txt']), 'image/webp');
       const image = document.getElementById('educationCredentialImage');
       const link = document.getElementById('educationCredentialLink');
       if (image) {
