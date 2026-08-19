@@ -37,6 +37,17 @@
         </div>
         <p id="authMessage" class="form-message" aria-live="polite"></p>
       </form>
+
+      <details id="recoveryPanel" class="recovery-panel">
+        <summary>Magic link opened localhost?</summary>
+        <p>If the sign-in email authenticates successfully but your browser lands on <code>localhost:3000</code>, copy the <strong>entire address-bar URL</strong>, return to this page, and paste it below. The session token is processed only in this browser and immediately cleared from the field.</p>
+        <form id="recoveryForm">
+          <label for="localhostUrl">Localhost redirect URL</label>
+          <textarea id="localhostUrl" name="localhostUrl" rows="4" spellcheck="false" autocomplete="off" placeholder="http://localhost:3000/#access_token=…&refresh_token=…"></textarea>
+          <button class="button" type="submit">Recover secure session</button>
+          <p id="recoveryMessage" class="form-message" aria-live="polite"></p>
+        </form>
+      </details>
     </section>
 
     <section id="dashboard" hidden>
@@ -77,6 +88,6 @@
     </section>
   </main>
 
-  <script type="module" src="dashboard.js"></script>
+  <script type="module" src="dashboard.js?v=20260819-localhost-recovery1"></script>
 </body>
 </html>
