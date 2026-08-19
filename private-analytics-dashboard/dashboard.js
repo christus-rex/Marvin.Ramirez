@@ -15,6 +15,10 @@ const authMessage = document.getElementById('authMessage');
 const signOut = document.getElementById('signOut');
 const emailInput = document.getElementById('email');
 const submitButton = loginForm?.querySelector('button[type="submit"]');
+const recoveryForm = document.getElementById('recoveryForm');
+const localhostUrlInput = document.getElementById('localhostUrl');
+const recoveryMessage = document.getElementById('recoveryMessage');
+const recoveryPanel = document.getElementById('recoveryPanel');
 
 if (!configured) {
   configNotice.hidden = false;
@@ -105,6 +109,7 @@ const renderDashboard = (data) => {
 
 const loadAnalytics = async () => {
   authMessage.textContent = '';
+  if (recoveryMessage) recoveryMessage.textContent = '';
   const { data, error } = await supabase.rpc('get_portfolio_analytics');
   if (error) {
     dashboard.hidden = true;
@@ -140,6 +145,31 @@ const syncAuth = async () => {
   }
 };
 
+const sessionTokensFromUrl = (rawUrl) => {
+  let url;
+  try {
+    url = new URL(rawUrl.trim());
+  } catch (_) {
+    throw new Error('Paste the complete localhost URL from the browser address bar.');
+  }
+
+  const allowedHost = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+  if (!allowedHost) {
+    throw new Error('For safety, recovery only accepts a localhost redirect URL.');
+  }
+
+  const hash = new URLSearchParams(url.hash.replace(/^#/, ''));
+  const query = url.searchParams;
+  const accessToken = hash.get('access_token') || query.get('access_token');
+  const refreshToken = hash.get('refresh_token') || query.get('refresh_token');
+
+  if (!accessToken || !refreshToken) {
+    throw new Error('That URL does not contain a recoverable Supabase session. Use the newest successful magic-link redirect.');
+  }
+
+  return { accessToken, refreshToken };
+};
+
 loginForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   if (submitButton?.disabled) return;
@@ -169,7 +199,47 @@ loginForm.addEventListener('submit', async (event) => {
   }
 
   authMessage.textContent = 'Secure sign-in link sent. Use only the newest email; each link works once.';
+  if (recoveryPanel) recoveryPanel.open = true;
   startCooldown();
+});
+
+recoveryForm?.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  if (!localhostUrlInput || !recoveryMessage) return;
+
+  recoveryMessage.textContent = 'Validating recovered session…';
+  let tokens;
+  try {
+    tokens = sessionTokensFromUrl(localhostUrlInput.value);
+  } catch (error) {
+    recoveryMessage.textContent = error.message;
+    return;
+  }
+
+  localhostUrlInput.value = '';
+  const { data, error } = await supabase.auth.setSession({
+    access_token: tokens.accessToken,
+    refresh_token: tokens.refreshToken
+  });
+
+  tokens.accessToken = '';
+  tokens.refreshToken = '';
+
+  if (error || !data?.session) {
+    recoveryMessage.textContent = 'That localhost session is invalid or expired. Request one new magic link and use its first redirect only.';
+    return;
+  }
+
+  const signedInEmail = data.session.user?.email?.toLowerCase();
+  if (signedInEmail !== ADMIN_EMAIL) {
+    await supabase.auth.signOut();
+    recoveryMessage.textContent = 'The recovered session belongs to an unapproved account.';
+    return;
+  }
+
+  history.replaceState({}, '', DASHBOARD_URL);
+  recoveryMessage.textContent = 'Secure session recovered.';
+  await loadAnalytics();
 });
 
 signOut.addEventListener('click', async () => {
