@@ -188,14 +188,17 @@
     await Promise.allSettled(jobs);
   };
 
-  const incrementResume = (resumeKey = 'resume-pdf') => {
+  const incrementResume = (resumeKey = 'general-it') => {
     const current = parseDisplayedNumber(metrics.resume);
     if (current !== null) render('resume', current + 1, { animate: true });
 
-    requestCounter('resume-download', resumeKey, {}, { keepalive: true })
-      .then(() => requestCounter('resume-download', 'resume-pdf', { readOnly: 'true' }))
+    requestCounter('resume-download', 'resume-pdf', {}, { keepalive: true })
       .then((value) => render('resume', value))
       .catch(() => markUnavailable('resume'));
+
+    requestCounter('resume-download-detail', resumeKey, {}, { keepalive: true }).catch(() => {
+      // Variant detail is supplemental; the master résumé total remains authoritative.
+    });
   };
 
   const incrementCredential = (key) => {
@@ -236,7 +239,7 @@
     const explicitKey = link.dataset.trackKey;
 
     if (explicitTrack === 'resume-download') {
-      incrementResume(explicitKey || 'resume-pdf');
+      incrementResume(explicitKey || 'general-it');
       return;
     }
 
