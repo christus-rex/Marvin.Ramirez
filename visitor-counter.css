@@ -89,6 +89,12 @@
   }
 }
 
+@media (max-width: 760px) {
+  #cover-letter .skill-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 @media (max-width: 640px) {
   .portfolio-analytics {
     display: grid;
