@@ -24,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Link Eastern credential PDF download
+      - name: Prepare production portfolio
         shell: bash
         run: |
           python3 <<'PY'
@@ -48,7 +48,6 @@ jobs:
 
           download_style = "font-weight:700;color:#2563eb;text-decoration:none"
           eastern_caption = "Computer Network Administration Program · June 2004"
-
           if "data-eastern-pdf-download" not in html:
               html = html.replace(
                   f"<figcaption>{eastern_caption}</figcaption>",
@@ -56,8 +55,22 @@ jobs:
                   1,
               )
 
+          analytics_scripts = (
+              '<script src="visitor-counter-private.js?v=20260819-private1"></script>\n'
+              '  <script src="private-analytics-client.js?v=20260819-private1"></script>'
+          )
+          html, analytics_count = re.subn(
+              r'<script\s+src="visitor-counter\.js[^\"]*"\s*></script>',
+              analytics_scripts,
+              html,
+              count=1,
+          )
+          if analytics_count != 1:
+              raise RuntimeError(f"Private analytics script cutover failed: {analytics_count}")
+
           index.write_text(html, encoding="utf-8")
           print(f"Eastern PDF linked: {eastern_name}")
+          print("Private Supabase analytics client enabled; public CounterAPI runtime disabled.")
           PY
 
       - name: Setup Pages
