@@ -8,20 +8,136 @@
     '1dKfGFVppYUdJ0SDFnmy8WgaLYyyoJ94w'
   ]);
 
-  const legacyCounter = document.querySelector('.visitor-counter');
-  if (!legacyCounter) return;
-
-  // Keep the analytics and recruiter-conversion enhancement self-contained.
-  if (!document.querySelector('link[data-portfolio-analytics-style]')) {
+  const addStylesheet = (href, marker) => {
+    if (document.querySelector(`link[${marker}]`)) return;
     const stylesheet = document.createElement('link');
     stylesheet.rel = 'stylesheet';
-    stylesheet.href = 'visitor-counter.css?v=20260819-recruiter1';
-    stylesheet.dataset.portfolioAnalyticsStyle = 'true';
+    stylesheet.href = href;
+    stylesheet.setAttribute(marker, 'true');
     document.head.appendChild(stylesheet);
-  }
+  };
 
-  const originalHeroActions = document.querySelector('.hero-copy .hero-actions');
-  if (originalHeroActions && !document.querySelector('.opportunity-panel')) {
+  addStylesheet('visitor-counter.css?v=20260819-recruiter1', 'data-portfolio-analytics-style');
+  addStylesheet('portfolio-projects.css?v=20260819-preview1', 'data-portfolio-projects-style');
+
+  const injectProjects = () => {
+    if (document.getElementById('projects')) return;
+    const experience = document.getElementById('experience');
+    if (!experience) return;
+
+    experience.insertAdjacentHTML('beforebegin', `
+      <section class="section featured-projects" id="projects">
+        <div class="shell">
+          <div class="projects-intro">
+            <div>
+              <p class="section-kicker">Featured technical projects</p>
+              <h2>Hands-on work that connects endpoint engineering to field infrastructure.</h2>
+            </div>
+            <p class="projects-summary">Selected examples from enterprise support, migration, automation, server hardware, structured cabling, and multi-site field operations. Each project is grounded in documented experience from the portfolio.</p>
+          </div>
+
+          <div class="projects-grid">
+            <article class="project-card">
+              <div class="project-card-head">
+                <div>
+                  <h3>Dell SupportAssist Deployment</h3>
+                  <p class="project-context">Aqua America · Desktop Support Analyst III</p>
+                </div>
+                <span class="project-index">01</span>
+              </div>
+              <div class="project-tags">
+                <span class="project-tag">SCCM</span>
+                <span class="project-tag">Automation</span>
+                <span class="project-tag">Endpoint Engineering</span>
+              </div>
+              <ul>
+                <li>Led an enterprise Dell SupportAssist deployment initiative.</li>
+                <li>Created SCCM scripts and task-sequence logic to support rollout and endpoint consistency.</li>
+                <li>Worked inside an environment supporting more than 1,000 end users across multiple sites.</li>
+              </ul>
+              <p class="project-proof"><strong>Evidence:</strong> enterprise endpoint deployment, scripting, SCCM task sequences, and Tier 2–3 support.</p>
+            </article>
+
+            <article class="project-card">
+              <div class="project-card-head">
+                <div>
+                  <h3>Enterprise Windows 10 Migration</h3>
+                  <p class="project-context">TEKsystems / Aqua America · Migration Technician</p>
+                </div>
+                <span class="project-index">02</span>
+              </div>
+              <div class="project-tags">
+                <span class="project-tag">Windows 10</span>
+                <span class="project-tag">SCCM Imaging</span>
+                <span class="project-tag">User Migration</span>
+              </div>
+              <ul>
+                <li>Migrated and imaged Windows systems using SCCM.</li>
+                <li>Backed up and restored user data while coordinating upgrade schedules.</li>
+                <li>Handled post-deployment troubleshooting and compatibility issues.</li>
+              </ul>
+              <p class="project-proof"><strong>Evidence:</strong> deployment lifecycle support from scheduling through post-migration remediation.</p>
+            </article>
+
+            <article class="project-card">
+              <div class="project-card-head">
+                <div>
+                  <h3>Multi-Site Field Infrastructure</h3>
+                  <p class="project-context">Albertsons Companies / Pomeroy IT Solutions</p>
+                </div>
+                <span class="project-index">03</span>
+              </div>
+              <div class="project-tags">
+                <span class="project-tag">Rack & Stack</span>
+                <span class="project-tag">Structured Cabling</span>
+                <span class="project-tag">Field Service</span>
+              </div>
+              <ul>
+                <li>Supported rack building, server hardware installation and maintenance, and component replacement.</li>
+                <li>Installed and troubleshot network equipment, POS systems, PCs, printers, and structured cabling.</li>
+                <li>Maintained SLA-focused service while mentoring and training technicians.</li>
+              </ul>
+              <p class="project-proof"><strong>Evidence:</strong> regional, multi-site infrastructure support across retail environments.</p>
+            </article>
+
+            <article class="project-card">
+              <div class="project-card-head">
+                <div>
+                  <h3>Server & Hardware Lifecycle Support</h3>
+                  <p class="project-context">Field operations · Data-center-aligned experience</p>
+                </div>
+                <span class="project-index">04</span>
+              </div>
+              <div class="project-tags">
+                <span class="project-tag">Server Hardware</span>
+                <span class="project-tag">Break / Fix</span>
+                <span class="project-tag">Network Equipment</span>
+              </div>
+              <ul>
+                <li>Built and configured custom servers and serviced production hardware in field environments.</li>
+                <li>Performed component replacement, hardware troubleshooting, cabling, and infrastructure deployment.</li>
+                <li>Combined hands-on hardware work with Windows deployment and network-device support.</li>
+              </ul>
+              <p class="project-proof"><strong>Evidence:</strong> practical server, endpoint, network-edge, and break/fix experience across multiple roles.</p>
+            </article>
+          </div>
+        </div>
+      </section>`);
+
+    const nav = document.querySelector('nav[aria-label="Primary navigation"]');
+    if (nav && !nav.querySelector('a[href="#projects"]')) {
+      const skillsLink = nav.querySelector('a[href="#skills"]');
+      const projectsLink = document.createElement('a');
+      projectsLink.href = '#projects';
+      projectsLink.textContent = 'Projects';
+      skillsLink?.insertAdjacentElement('afterend', projectsLink);
+    }
+  };
+
+  const injectOpportunityPanel = () => {
+    const originalHeroActions = document.querySelector('.hero-copy .hero-actions');
+    if (!originalHeroActions || document.querySelector('.opportunity-panel')) return;
+
     originalHeroActions.outerHTML = `
       <div class="opportunity-panel" aria-label="Availability and recruiter actions">
         <div class="opportunity-head">
@@ -40,11 +156,17 @@
         <div class="opportunity-meta">
           <span>Fredericksburg, Virginia</span>
           <span>On-site · Remote · Field</span>
-          <a href="#experience">View experience</a>
+          <a href="#projects">Featured projects</a>
           <a href="#resumes">Résumé options</a>
         </div>
       </div>`;
-  }
+  };
+
+  injectProjects();
+  injectOpportunityPanel();
+
+  const legacyCounter = document.querySelector('.visitor-counter');
+  if (!legacyCounter) return;
 
   legacyCounter.outerHTML = `
     <div class="portfolio-analytics" role="group" aria-label="Portfolio activity">
@@ -79,7 +201,6 @@
   };
 
   const cacheKey = (name) => `${CACHE_PREFIX}${name}`;
-
   const readCached = (name) => {
     try {
       const raw = localStorage.getItem(cacheKey(name));
@@ -92,11 +213,7 @@
   };
 
   const writeCached = (name, value) => {
-    try {
-      localStorage.setItem(cacheKey(name), String(value));
-    } catch (_) {
-      // Storage can be unavailable in privacy modes; live counters still work.
-    }
+    try { localStorage.setItem(cacheKey(name), String(value)); } catch (_) {}
   };
 
   const parseDisplayedNumber = (element) => {
@@ -127,14 +244,12 @@
     const start = from ?? 0;
     const duration = 420;
     const startedAt = performance.now();
-
     const tick = (now) => {
       const progress = Math.min(1, (now - startedAt) / duration);
       const eased = 1 - Math.pow(1 - progress, 3);
       element.textContent = formatCount(Math.round(start + (value - start) * eased));
       if (progress < 1) requestAnimationFrame(tick);
     };
-
     requestAnimationFrame(tick);
   };
 
@@ -143,7 +258,6 @@
     if (!element) return;
     const metric = element.closest('.analytics-metric');
     metric?.setAttribute('data-error', 'true');
-    metric?.setAttribute('title', `${metric.title || 'Metric'} — live total temporarily unavailable`);
     if (readCached(name) === null) element.textContent = '—';
   };
 
@@ -154,12 +268,8 @@
 
   const requestCounter = async (action, key, params = {}, options = {}) => {
     const response = await fetch(endpoint(action, key, params), {
-      method: 'GET',
-      mode: 'cors',
-      cache: 'no-store',
-      credentials: 'omit',
-      referrerPolicy: 'strict-origin-when-cross-origin',
-      keepalive: Boolean(options.keepalive)
+      method: 'GET', mode: 'cors', cache: 'no-store', credentials: 'omit',
+      referrerPolicy: 'strict-origin-when-cross-origin', keepalive: Boolean(options.keepalive)
     });
     if (!response.ok) throw new Error(`Counter request failed: ${response.status}`);
     const data = await response.json();
@@ -174,58 +284,42 @@
   });
 
   const refreshTotals = async () => {
-    const jobs = [
+    await Promise.allSettled([
       requestCounter('visitor', 'marvin-ramirez', { unique: 'true' })
-        .then((value) => render('visitors', value))
-        .catch(() => markUnavailable('visitors')),
+        .then((value) => render('visitors', value)).catch(() => markUnavailable('visitors')),
       requestCounter('resume-download', 'resume-pdf', { readOnly: 'true' })
-        .then((value) => render('resume', value))
-        .catch(() => markUnavailable('resume')),
+        .then((value) => render('resume', value)).catch(() => markUnavailable('resume')),
       requestCounter('credential-view', 'any', { readOnly: 'true' })
-        .then((value) => render('credentials', value))
-        .catch(() => markUnavailable('credentials'))
-    ];
-    await Promise.allSettled(jobs);
+        .then((value) => render('credentials', value)).catch(() => markUnavailable('credentials'))
+    ]);
   };
 
   const incrementResume = (resumeKey = 'general-it') => {
     const current = parseDisplayedNumber(metrics.resume);
-    if (current !== null) render('resume', current + 1, { animate: true });
-
+    if (current !== null) render('resume', current + 1);
     requestCounter('resume-download', 'resume-pdf', {}, { keepalive: true })
-      .then((value) => render('resume', value))
-      .catch(() => markUnavailable('resume'));
-
-    requestCounter('resume-download-detail', resumeKey, {}, { keepalive: true }).catch(() => {
-      // Variant detail is supplemental; the master résumé total remains authoritative.
-    });
+      .then((value) => render('resume', value)).catch(() => markUnavailable('resume'));
+    requestCounter('resume-download-detail', resumeKey, {}, { keepalive: true }).catch(() => {});
   };
 
   const incrementCredential = (key) => {
     const current = parseDisplayedNumber(metrics.credentials);
-    if (current !== null) render('credentials', current + 1, { animate: true });
-
+    if (current !== null) render('credentials', current + 1);
     requestCounter('credential-view', key, {}, { keepalive: true })
       .then(() => requestCounter('credential-view', 'any', { readOnly: 'true' }))
-      .then((value) => render('credentials', value))
-      .catch(() => markUnavailable('credentials'));
+      .then((value) => render('credentials', value)).catch(() => markUnavailable('credentials'));
   };
 
   const trackRecruiterAction = (key) => {
     if (!key) return;
-    requestCounter('recruiter-action', key, {}, { keepalive: true }).catch(() => {
-      // Recruiter-intent events are intentionally silent; they must never block navigation.
-    });
+    requestCounter('recruiter-action', key, {}, { keepalive: true }).catch(() => {});
   };
 
   const getGoogleDriveId = (href) => {
     try {
       const url = new URL(href, window.location.href);
-      if (url.hostname !== 'drive.google.com') return null;
-      return url.searchParams.get('id');
-    } catch (_) {
-      return null;
-    }
+      return url.hostname === 'drive.google.com' ? url.searchParams.get('id') : null;
+    } catch (_) { return null; }
   };
 
   document.addEventListener('click', (event) => {
@@ -242,22 +336,18 @@
       incrementResume(explicitKey || 'general-it');
       return;
     }
-
     if (explicitTrack === 'recruiter-action') {
       trackRecruiterAction(explicitKey);
       return;
     }
-
     if (href.startsWith('mailto:')) {
       trackRecruiterAction('email-click');
       return;
     }
-
     if (href.startsWith('tel:')) {
       trackRecruiterAction('phone-click');
       return;
     }
-
     if (href.includes('linkedin.com/in/')) {
       trackRecruiterAction('linkedin-click');
       return;
@@ -268,17 +358,14 @@
       incrementResume(driveId === '1dKfGFVppYUdJ0SDFnmy8WgaLYyyoJ94w' ? 'data-center' : 'general-it');
       return;
     }
-
     if (link.id === 'certLink') {
       incrementCredential('comptia-a-plus');
       return;
     }
-
     if (link.id === 'educationCredentialLink') {
       incrementCredential('eastern-center-network-admin');
       return;
     }
-
     if (href.includes('1xUyDk8hZVfvkH5Q1zyFi1_C7lyl9K5RN')) {
       incrementCredential('upper-moreland-diploma');
     }
