@@ -109,7 +109,7 @@ loginForm.addEventListener('submit', async (event) => {
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      shouldCreateUser: false,
+      shouldCreateUser: true,
       emailRedirectTo: location.href.split('#')[0].split('?')[0]
     }
   });
