@@ -7,8 +7,7 @@
   const legacyCounter = document.querySelector('.visitor-counter');
   if (!legacyCounter) return;
 
-  // The analytics stylesheet is intentionally loaded here so this enhancement remains
-  // self-contained and survives future edits to the base portfolio stylesheet.
+  // Keep this enhancement self-contained so it survives future edits to the base stylesheet.
   if (!document.querySelector('link[data-portfolio-analytics-style]')) {
     const stylesheet = document.createElement('link');
     stylesheet.rel = 'stylesheet';
@@ -53,7 +52,9 @@
 
   const readCached = (name) => {
     try {
-      const value = Number(localStorage.getItem(cacheKey(name)));
+      const raw = localStorage.getItem(cacheKey(name));
+      if (raw === null) return null;
+      const value = Number(raw);
       return Number.isFinite(value) && value >= 0 ? value : null;
     } catch (_) {
       return null;
@@ -69,7 +70,9 @@
   };
 
   const parseDisplayedNumber = (element) => {
-    const parsed = Number(String(element.textContent || '').replace(/[^0-9.-]/g, ''));
+    const raw = String(element?.textContent || '').replace(/[^0-9.-]/g, '');
+    if (!raw) return null;
+    const parsed = Number(raw);
     return Number.isFinite(parsed) ? parsed : null;
   };
 
@@ -115,8 +118,8 @@
   };
 
   const endpoint = (action, key, params = {}) => {
-    const query = new URLSearchParams(params);
-    return `${API_BASE}/${encodeURIComponent(NAMESPACE)}/${encodeURIComponent(action)}/${encodeURIComponent(key)}${query.size ? `?${query}` : ''}`;
+    const query = new URLSearchParams(params).toString();
+    return `${API_BASE}/${encodeURIComponent(NAMESPACE)}/${encodeURIComponent(action)}/${encodeURIComponent(key)}${query ? `?${query}` : ''}`;
   };
 
   const requestCounter = async (action, key, params = {}, options = {}) => {
@@ -177,7 +180,9 @@
   };
 
   document.addEventListener('click', (event) => {
-    const link = event.target.closest('a');
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const link = target.closest('a');
     if (!link) return;
 
     const href = link.getAttribute('href') || '';
