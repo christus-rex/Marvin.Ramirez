@@ -1,8 +1,6 @@
 (() => {
-  const endpoint = window.__PORTFOLIO_ANALYTICS_ENDPOINT__ ||
-    document.querySelector('meta[name="portfolio-analytics-endpoint"]')?.content;
-
-  if (!endpoint) return;
+  const endpoint = 'https://lidpzxfnaezzjzrvfpnu.supabase.co/functions/v1/track-portfolio-event';
+  const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxpZHB6eGZuYWV6emp6cnZmcG51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxMTMwNzAsImV4cCI6MjEwMjY4OTA3MH0.Q26rzbTb87EID5Wokz5Ghq8XT4eA0_0hrEVe2dkNC4Y';
 
   const VISITOR_KEY = 'marvin-portfolio-private-visitor-id';
   const RESUME_IDS = new Map([
@@ -32,7 +30,11 @@
       credentials: 'omit',
       referrerPolicy: 'strict-origin-when-cross-origin',
       keepalive: true,
-      headers: { 'content-type': 'application/json' },
+      headers: {
+        'content-type': 'application/json',
+        'apikey': anonKey,
+        'authorization': `Bearer ${anonKey}`
+      },
       body: JSON.stringify({ events: events.slice(0, 3) })
     }).catch(() => {
       // Analytics must never interfere with portfolio navigation.
@@ -78,20 +80,9 @@
       return;
     }
 
-    if (href.startsWith('mailto:')) {
-      send([{ name: 'recruiter.email' }]);
-      return;
-    }
-
-    if (href.startsWith('tel:')) {
-      send([{ name: 'recruiter.phone' }]);
-      return;
-    }
-
-    if (href.includes('linkedin.com/in/')) {
-      send([{ name: 'recruiter.linkedin' }]);
-      return;
-    }
+    if (href.startsWith('mailto:')) { send([{ name: 'recruiter.email' }]); return; }
+    if (href.startsWith('tel:')) { send([{ name: 'recruiter.phone' }]); return; }
+    if (href.includes('linkedin.com/in/')) { send([{ name: 'recruiter.linkedin' }]); return; }
 
     const driveId = getDriveId(href);
     if (href.includes('export=download') && driveId && RESUME_IDS.has(driveId)) {
