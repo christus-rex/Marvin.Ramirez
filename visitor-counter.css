@@ -1,3 +1,93 @@
+.opportunity-panel {
+  margin-top: 30px;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, .055);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .16);
+  backdrop-filter: blur(12px);
+}
+
+.opportunity-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.opportunity-head > div {
+  min-width: 0;
+}
+
+.opportunity-head strong,
+.opportunity-head span {
+  display: block;
+}
+
+.opportunity-head strong {
+  color: #fff;
+  font-family: "Space Grotesk", Inter, sans-serif;
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.opportunity-head span {
+  margin-top: 3px;
+  color: #9fb0c6;
+  font-size: .76rem;
+  line-height: 1.35;
+}
+
+.opportunity-status-dot {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 10px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 0 5px rgba(52, 211, 153, .1), 0 0 18px rgba(52, 211, 153, .28);
+}
+
+.opportunity-actions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.hero .opportunity-actions .button {
+  min-width: 0;
+  min-height: 42px;
+  padding: 0 12px;
+  font-size: .79rem;
+  white-space: nowrap;
+}
+
+.hero .opportunity-actions .button-ghost {
+  color: #fff;
+  border-color: rgba(255, 255, 255, .24);
+}
+
+.opportunity-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px 14px;
+  align-items: center;
+  margin-top: 13px;
+  color: #8294ab;
+  font-size: .71rem;
+}
+
+.opportunity-meta a {
+  color: #b8dbff;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.opportunity-meta a:hover {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .portfolio-analytics {
   display: inline-grid;
   grid-template-columns: repeat(3, max-content);
@@ -73,6 +163,10 @@
 }
 
 @media (max-width: 1120px) {
+  .opportunity-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .portfolio-analytics {
     grid-template-columns: repeat(3, 1fr);
     width: 100%;
@@ -96,6 +190,25 @@
 }
 
 @media (max-width: 640px) {
+  .opportunity-panel {
+    padding: 15px;
+    border-radius: 16px;
+  }
+
+  .opportunity-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .hero .opportunity-actions .button {
+    min-height: 44px;
+    font-size: .76rem;
+  }
+
+  .opportunity-meta {
+    gap: 6px 11px;
+    font-size: .68rem;
+  }
+
   .portfolio-analytics {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -135,8 +248,15 @@
   }
 }
 
+@media (max-width: 390px) {
+  .opportunity-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .footer-inner .portfolio-analytics .analytics-metric {
+  .footer-inner .portfolio-analytics .analytics-metric,
+  .opportunity-panel .button {
     transition: none;
   }
 }
