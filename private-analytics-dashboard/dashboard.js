@@ -3,6 +3,9 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const supabaseUrl = document.querySelector('meta[name="supabase-url"]')?.content || '';
 const anonKey = document.querySelector('meta[name="supabase-anon-key"]')?.content || '';
 const configured = supabaseUrl.startsWith('https://') && !supabaseUrl.includes('PLACEHOLDER') && anonKey && !anonKey.includes('PLACEHOLDER');
+const ADMIN_EMAIL = 'speeddevil@gmail.com';
+const DASHBOARD_URL = 'https://christus-rex.github.io/Marvin.Ramirez/private-analytics-dashboard/';
+const RESEND_SECONDS = 60;
 
 const configNotice = document.getElementById('configNotice');
 const authPanel = document.getElementById('authPanel');
@@ -10,11 +13,19 @@ const dashboard = document.getElementById('dashboard');
 const loginForm = document.getElementById('loginForm');
 const authMessage = document.getElementById('authMessage');
 const signOut = document.getElementById('signOut');
+const emailInput = document.getElementById('email');
+const submitButton = loginForm?.querySelector('button[type="submit"]');
 
 if (!configured) {
   configNotice.hidden = false;
   authPanel.hidden = true;
   throw new Error('Private analytics dashboard is not configured yet.');
+}
+
+if (emailInput) {
+  emailInput.value = ADMIN_EMAIL;
+  emailInput.readOnly = true;
+  emailInput.autocomplete = 'username';
 }
 
 const supabase = createClient(supabaseUrl, anonKey, {
@@ -24,6 +35,25 @@ const supabase = createClient(supabaseUrl, anonKey, {
 const fmt = new Intl.NumberFormat();
 const pct = (part, total) => total > 0 ? `${((part / total) * 100).toFixed(1)}%` : '0.0%';
 const value = (counters, key) => Number(counters?.[key] || 0);
+let cooldownTimer = null;
+
+const startCooldown = (seconds = RESEND_SECONDS) => {
+  if (!submitButton) return;
+  clearInterval(cooldownTimer);
+  let remaining = Math.max(1, seconds);
+  submitButton.disabled = true;
+  submitButton.textContent = `Try again in ${remaining}s`;
+  cooldownTimer = setInterval(() => {
+    remaining -= 1;
+    if (remaining <= 0) {
+      clearInterval(cooldownTimer);
+      submitButton.disabled = false;
+      submitButton.textContent = 'Send secure link';
+      return;
+    }
+    submitButton.textContent = `Try again in ${remaining}s`;
+  }, 1000);
+};
 
 const renderRows = (target, rows) => {
   const max = Math.max(1, ...rows.map((row) => row.value));
@@ -80,8 +110,8 @@ const loadAnalytics = async () => {
     dashboard.hidden = true;
     authPanel.hidden = false;
     authMessage.textContent = error.code === '42501'
-      ? 'This account is signed in but is not approved for analytics access.'
-      : 'Analytics could not be loaded.';
+      ? 'This signed-in account is not approved for analytics access.'
+      : 'Analytics could not be loaded. Please sign out and try again.';
     return;
   }
   authPanel.hidden = true;
@@ -93,6 +123,15 @@ const loadAnalytics = async () => {
 const syncAuth = async () => {
   const { data: { session } } = await supabase.auth.getSession();
   if (session) {
+    const signedInEmail = session.user?.email?.toLowerCase();
+    if (signedInEmail !== ADMIN_EMAIL) {
+      await supabase.auth.signOut();
+      dashboard.hidden = true;
+      authPanel.hidden = false;
+      signOut.hidden = true;
+      authMessage.textContent = 'This account is not approved for analytics access.';
+      return;
+    }
     await loadAnalytics();
   } else {
     dashboard.hidden = true;
@@ -103,19 +142,34 @@ const syncAuth = async () => {
 
 loginForm.addEventListener('submit', async (event) => {
   event.preventDefault();
-  const email = new FormData(loginForm).get('email')?.toString().trim();
-  if (!email) return;
+  if (submitButton?.disabled) return;
+
+  const email = new FormData(loginForm).get('email')?.toString().trim().toLowerCase();
+  if (email !== ADMIN_EMAIL) {
+    authMessage.textContent = 'Use the approved administrator account.';
+    return;
+  }
+
   authMessage.textContent = 'Sending secure sign-in link…';
   const { error } = await supabase.auth.signInWithOtp({
-    email,
+    email: ADMIN_EMAIL,
     options: {
-      shouldCreateUser: true,
-      emailRedirectTo: location.href.split('#')[0].split('?')[0]
+      shouldCreateUser: false,
+      emailRedirectTo: DASHBOARD_URL
     }
   });
-  authMessage.textContent = error
-    ? 'Sign-in link could not be sent. Use the approved administrator account.'
-    : 'Secure sign-in link sent. Check your email.';
+
+  if (error) {
+    const rateLimited = error.status === 429 || error.code === 'over_email_send_rate_limit' || /rate limit/i.test(error.message || '');
+    authMessage.textContent = rateLimited
+      ? 'Too many sign-in emails were requested. Please wait for the countdown, then request one new link and use only the newest email.'
+      : `Sign-in link could not be sent: ${error.message || 'authentication error'}`;
+    if (rateLimited) startCooldown();
+    return;
+  }
+
+  authMessage.textContent = 'Secure sign-in link sent. Use only the newest email; each link works once.';
+  startCooldown();
 });
 
 signOut.addEventListener('click', async () => {
