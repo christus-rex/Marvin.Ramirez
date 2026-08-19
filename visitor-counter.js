@@ -3,17 +3,47 @@
   const NAMESPACE = 'christus-rex.github.io';
   const CACHE_PREFIX = 'marvin-portfolio-analytics:';
   const REDUCED_MOTION = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+  const RESUME_DOWNLOAD_IDS = new Set([
+    '1-x9CWEKG3XUHW4QFA-6PKvqYLFIgXTUZ',
+    '1dKfGFVppYUdJ0SDFnmy8WgaLYyyoJ94w'
+  ]);
 
   const legacyCounter = document.querySelector('.visitor-counter');
   if (!legacyCounter) return;
 
-  // Keep this enhancement self-contained so it survives future edits to the base stylesheet.
+  // Keep the analytics and recruiter-conversion enhancement self-contained.
   if (!document.querySelector('link[data-portfolio-analytics-style]')) {
     const stylesheet = document.createElement('link');
     stylesheet.rel = 'stylesheet';
-    stylesheet.href = 'visitor-counter.css?v=20260818-analytics1';
+    stylesheet.href = 'visitor-counter.css?v=20260819-recruiter1';
     stylesheet.dataset.portfolioAnalyticsStyle = 'true';
     document.head.appendChild(stylesheet);
+  }
+
+  const originalHeroActions = document.querySelector('.hero-copy .hero-actions');
+  if (originalHeroActions && !document.querySelector('.opportunity-panel')) {
+    originalHeroActions.outerHTML = `
+      <div class="opportunity-panel" aria-label="Availability and recruiter actions">
+        <div class="opportunity-head">
+          <span class="opportunity-status-dot" aria-hidden="true"></span>
+          <div>
+            <strong>Available for opportunities</strong>
+            <span>IT Support · Endpoint Engineering · Data Center · Field Service</span>
+          </div>
+        </div>
+        <div class="opportunity-actions">
+          <a class="button" href="https://drive.google.com/uc?export=download&id=1-x9CWEKG3XUHW4QFA-6PKvqYLFIgXTUZ" target="_blank" rel="noopener" data-track="resume-download" data-track-key="general-it">Download résumé</a>
+          <a class="button button-ghost" href="mailto:Marv875@gmail.com" data-track="recruiter-action" data-track-key="email-click">Email me</a>
+          <a class="button button-ghost" href="https://www.linkedin.com/in/marvin-alberto-ramirez-bonilla-54261410" target="_blank" rel="noopener noreferrer" data-track="recruiter-action" data-track-key="linkedin-click">LinkedIn</a>
+          <a class="button button-ghost" href="tel:+12407530643" data-track="recruiter-action" data-track-key="phone-click">Call</a>
+        </div>
+        <div class="opportunity-meta">
+          <span>Fredericksburg, Virginia</span>
+          <span>On-site · Remote · Field</span>
+          <a href="#experience">View experience</a>
+          <a href="#resumes">Résumé options</a>
+        </div>
+      </div>`;
   }
 
   legacyCounter.outerHTML = `
@@ -138,8 +168,6 @@
     return value;
   };
 
-  // Paint the last successful totals instantly, avoiding visual regressions when the
-  // analytics service is slow or temporarily unavailable.
   Object.keys(metrics).forEach((name) => {
     const cached = readCached(name);
     if (cached !== null) render(name, cached, { animate: false, cache: false });
@@ -160,11 +188,12 @@
     await Promise.allSettled(jobs);
   };
 
-  const incrementResume = () => {
+  const incrementResume = (resumeKey = 'resume-pdf') => {
     const current = parseDisplayedNumber(metrics.resume);
     if (current !== null) render('resume', current + 1, { animate: true });
 
-    requestCounter('resume-download', 'resume-pdf', {}, { keepalive: true })
+    requestCounter('resume-download', resumeKey, {}, { keepalive: true })
+      .then(() => requestCounter('resume-download', 'resume-pdf', { readOnly: 'true' }))
       .then((value) => render('resume', value))
       .catch(() => markUnavailable('resume'));
   };
@@ -179,6 +208,23 @@
       .catch(() => markUnavailable('credentials'));
   };
 
+  const trackRecruiterAction = (key) => {
+    if (!key) return;
+    requestCounter('recruiter-action', key, {}, { keepalive: true }).catch(() => {
+      // Recruiter-intent events are intentionally silent; they must never block navigation.
+    });
+  };
+
+  const getGoogleDriveId = (href) => {
+    try {
+      const url = new URL(href, window.location.href);
+      if (url.hostname !== 'drive.google.com') return null;
+      return url.searchParams.get('id');
+    } catch (_) {
+      return null;
+    }
+  };
+
   document.addEventListener('click', (event) => {
     const target = event.target;
     if (!(target instanceof Element)) return;
@@ -186,9 +232,37 @@
     if (!link) return;
 
     const href = link.getAttribute('href') || '';
+    const explicitTrack = link.dataset.track;
+    const explicitKey = link.dataset.trackKey;
 
-    if (href.includes('1-x9CWEKG3XUHW4QFA-6PKvqYLFIgXTUZ')) {
-      incrementResume();
+    if (explicitTrack === 'resume-download') {
+      incrementResume(explicitKey || 'resume-pdf');
+      return;
+    }
+
+    if (explicitTrack === 'recruiter-action') {
+      trackRecruiterAction(explicitKey);
+      return;
+    }
+
+    if (href.startsWith('mailto:')) {
+      trackRecruiterAction('email-click');
+      return;
+    }
+
+    if (href.startsWith('tel:')) {
+      trackRecruiterAction('phone-click');
+      return;
+    }
+
+    if (href.includes('linkedin.com/in/')) {
+      trackRecruiterAction('linkedin-click');
+      return;
+    }
+
+    const driveId = getGoogleDriveId(href);
+    if (href.includes('export=download') && driveId && RESUME_DOWNLOAD_IDS.has(driveId)) {
+      incrementResume(driveId === '1dKfGFVppYUdJ0SDFnmy8WgaLYyyoJ94w' ? 'data-center' : 'general-it');
       return;
     }
 
