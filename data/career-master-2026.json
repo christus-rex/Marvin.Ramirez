@@ -1,0 +1,40 @@
+{
+  "name": "Marvin Alberto Ramirez-Bonilla",
+  "location": "Fredericksburg, VA",
+  "experience": "15+ years",
+  "supportedUsers": "1,000+",
+  "languages": ["English", "Spanish"],
+  "canonicalTerminology": {
+    "identityPlatform": "Microsoft Entra ID (Azure AD)",
+    "endpointManagement": "SCCM/MECM; Microsoft Intune",
+    "serviceManagement": "ServiceNow"
+  },
+  "targetTracks": [
+    "General IT Support",
+    "Endpoint/Desktop Engineering",
+    "Data Center/Infrastructure",
+    "Field Service/Hardware"
+  ],
+  "experienceHistory": [
+    {"company":"Independent / Freelance Contractor","title":"IT Support Technician / Technical Services","dates":"Jan 2024 - Present"},
+    {"company":"Aqua America","title":"Desktop Support Analyst III","dates":"Nov 2020 - Aug 2024"},
+    {"company":"TEKsystems / Aqua America","title":"Windows 10 Migration Technician","dates":"Feb 2020 - Sep 2020"},
+    {"company":"Albertsons Companies","title":"Field Service Technician III","dates":"Dec 2017 - Dec 2019"},
+    {"company":"Pomeroy IT Solutions","title":"Lead / Regional Service Technician II","dates":"Jul 2014 - Dec 2017"},
+    {"company":"Vestcom Pennsylvania","title":"Digital Press Operator / Local IT Support","dates":"Apr 2012 - Jul 2014"},
+    {"company":"CompuCom - First Data Contract","title":"Field Technician / Windows 7 Deployment","dates":"Nov 2013 - Feb 2014"},
+    {"company":"GTS, Inc. - McDonald's Project","title":"Technical Lead","dates":"Jan 2010 - Jan 2012"},
+    {"company":"NCR Corporation","title":"Customer Engineer","dates":"Jan 2007 - Nov 2009"}
+  ],
+  "certifications": [
+    "CompTIA A+ Certified Professional",
+    "Dell Certified Technician - Hardware Service & Support",
+    "Certified Novell Administrator (CNA)",
+    "Cisco Networking Academy - CCNA 1",
+    "Pennsylvania Skills Certificate - Computer Networking Fundamentals"
+  ],
+  "education": [
+    "Eastern Center for Arts and Technology | Computer Network Administration Program | Jun 2004 | Willow Grove, PA",
+    "Upper Moreland High School | High School Diploma | Jun 2004 | Willow Grove, PA"
+  ]
+}
