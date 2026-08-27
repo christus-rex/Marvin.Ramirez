@@ -3,9 +3,10 @@
   const NAMESPACE = 'christus-rex.github.io';
   const CACHE_PREFIX = 'marvin-portfolio-analytics:';
   const REDUCED_MOTION = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
-  const RESUME_DOWNLOAD_IDS = new Set([
-    '1-x9CWEKG3XUHW4QFA-6PKvqYLFIgXTUZ',
-    '1dKfGFVppYUdJ0SDFnmy8WgaLYyyoJ94w'
+  const RESUME_DOWNLOAD_KEYS = new Map([
+    ['1-x9CWEKG3XUHW4QFA-6PKvqYLFIgXTUZ', 'general-it'],
+    ['1P9GJ3PWycVtSHTgTp-k9mI9FGGY2AaNV', 'endpoint-engineering'],
+    ['1dKfGFVppYUdJ0SDFnmy8WgaLYyyoJ94w', 'data-center']
   ]);
 
   const addStylesheet = (href, marker) => {
@@ -93,9 +94,9 @@
                 <span class="project-tag">Field Service</span>
               </div>
               <ul>
-                <li>Supported rack building, server hardware installation and maintenance, and component replacement.</li>
-                <li>Installed and troubleshot network equipment, POS systems, PCs, printers, and structured cabling.</li>
-                <li>Maintained SLA-focused service while mentoring and training technicians.</li>
+                <li>At Albertsons, built equipment racks and performed rack-and-stack work for server and network hardware.</li>
+                <li>Across Albertsons and Pomeroy field operations, installed or troubleshot network equipment, POS systems, PCs, printers, and structured cabling.</li>
+                <li>Supported SLA-focused field service and technician mentoring or training across multi-site retail environments.</li>
               </ul>
               <p class="project-proof"><strong>Evidence:</strong> regional, multi-site infrastructure support across retail environments.</p>
             </article>
@@ -354,8 +355,8 @@
     }
 
     const driveId = getGoogleDriveId(href);
-    if (href.includes('export=download') && driveId && RESUME_DOWNLOAD_IDS.has(driveId)) {
-      incrementResume(driveId === '1dKfGFVppYUdJ0SDFnmy8WgaLYyyoJ94w' ? 'data-center' : 'general-it');
+    if (href.includes('export=download') && driveId && RESUME_DOWNLOAD_KEYS.has(driveId)) {
+      incrementResume(RESUME_DOWNLOAD_KEYS.get(driveId));
       return;
     }
     if (link.id === 'certLink') {
